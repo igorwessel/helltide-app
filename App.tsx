@@ -1,67 +1,52 @@
+import Helltide from "@core/helltide";
+import NotificationsManager from "@core/notifications";
+import Banner from "@ui/banner";
+import HelltideTimer from "@ui/helltide";
+import { colors } from "@ui/theme";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import { useEffect, useState } from "react";
-import sub from "date-fns/sub";
-import format from "date-fns/formatDuration";
+import { useCallback, useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import * as Sentry from "sentry-expo";
 
-import add from "date-fns/add";
-
-const hellTiderEvent = 3600; // 1 hour (unix timestamp)
-const nextHelltiderEvent = 8100; // 2 hour and 15 min
-
-/**
- * 24:45 - 02:00
- * 02:00 - 04:15
- * 04:15 - 06:30
- * 06:30 - 08:30
- * 08:45 - 10:00
- * 10:00 - 12:15
- * 12:15 - 14:30
- * 14:30 - 16:45
- * 16:45 - 19:00
- * 19:00 - 21:15
- * 21:15 - 23:30
- */
-
-const timer = new Date();
-
-function getNextHelltide(date: Date) {
-  return add(date, { hours: 2, minutes: 15 });
-}
+NotificationsManager.configureHandler();
+SplashScreen.preventAutoHideAsync();
+Sentry.init({
+  dsn: "https://f9e7942065b6415c86f8907abebe1dcf@o4505419154194432.ingest.sentry.io/4505460181368832",
+});
 
 export default function App() {
-  const [currentTimer, setCurrentTimer] = useState(
-    getNextHelltide(new Date("August 14, 2023 08:30:00 UTC"))
-  );
+  const [isReady, setIsReady] = useState(false);
 
-  console.log(currentTimer);
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTimer((prev) => sub(prev, { seconds: 1 }));
-    }, 1000);
+    async function prepare() {
+      try {
+        await Helltide.init();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setIsReady(true);
+      }
+    }
 
-    return () => {
-      clearInterval(interval);
-    };
+    prepare();
   }, []);
 
+  const onLayoutRootView = useCallback(async () => {
+    if (isReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [isReady]);
+
+  if (!isReady) {
+    return null;
+  }
+
   return (
-    <View style={styles.container}>
+    <View onLayout={onLayoutRootView} style={styles.container}>
       <StatusBar style="auto" />
-      <Text>Helltide is active!</Text>
-      <View>
-        <Text>Time remaining</Text>
-        <Text>
-          {format(
-            {
-              hours: currentTimer.getHours(),
-              minutes: currentTimer.getMinutes(),
-              seconds: currentTimer.getSeconds(),
-            },
-            { delimiter: ", " }
-          )}
-        </Text>
-      </View>
+      <Banner />
+      <HelltideTimer />
     </View>
   );
 }
@@ -69,7 +54,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.secondary,
     alignItems: "center",
     justifyContent: "center",
   },
