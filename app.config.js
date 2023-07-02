@@ -7,8 +7,7 @@ module.exports = {
   userInterfaceStyle: "light",
   splash: {
     image: "./assets/splash.png",
-    resizeMode: "contain",
-    backgroundColor: "#000",
+    backgroundColor: "#2f4858",
   },
   assetBundlePatterns: ["**/*"],
   ios: {
