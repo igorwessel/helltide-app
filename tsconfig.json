@@ -1,4 +1,17 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "paths": {
+      "@assets/*": ["./assets/*"],
+      "@assets": ["./assets/index"],
+      "@core/*": ["./src/core/*"],
+      "@core": ["./src/core/index"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@hooks": ["./src/hooks/index"],
+      "@types/*": ["./src/types/*"],
+      "@types": ["./src/types/index"],
+      "@ui/*": ["./src/ui/*"],
+      "@ui": ["./src/ui/index"]
+    }
+  },
   "extends": "expo/tsconfig.base"
 }
